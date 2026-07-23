@@ -1,9 +1,9 @@
-import { TopBar } from "@/components/dashboard/TopBar";
+import { TopBar } from "@/src/components/dashboard/TopBar"
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -15,5 +15,5 @@ export default function DashboardLayout({
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import { Layers, Plus, Search } from "lucide-react";
+import { Layers, Plus, Search } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/src/components/ui/button"
+import { Input } from "@/src/components/ui/input"
 
 export function TopBar() {
   return (
@@ -37,5 +37,5 @@ export function TopBar() {
         </Button>
       </div>
     </header>
-  );
+  )
 }
