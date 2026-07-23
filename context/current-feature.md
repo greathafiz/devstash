@@ -1,6 +1,6 @@
 # Current Feature
 
-<!-- Feature name and short description -->
+**Dashboard Items** — Replace the dummy item data in the dashboard main area (pinned + recent items) with live data from the Neon database via Prisma, keeping the current look and layout.
 
 ## Status
 
@@ -8,11 +8,19 @@ Completed
 
 ## Goals
 
-<!-- Goals and requirements -->
+- Create `src/lib/db/items.ts` with data fetching functions.
+- Fetch items directly in the server component (no mock-data).
+- Derive each item card's icon/border from the item type.
+- Display item type tags and everything currently shown on the cards (see @context/screenshots/dashboard-ui-main.png).
+- If there are no pinned items, render nothing in that section.
+- Update the collection stats display.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Full spec: @context/features/dashboard-items-spec.md
+- Mirrors the approach used for Dashboard Collections (`src/lib/db/collections.ts`), which replaced mock collection data with live Prisma data.
+- Item card icon/border color comes from the item's type; keep the existing card layout (tags, pin/favorite markers, dates).
+- `src/lib/dashboard-data.ts` is now unused (the dashboard no longer reads mock data). Left in place — flag for deletion.
 
 ## History
 
@@ -24,3 +32,4 @@ Completed
 - 2026-07-23: **Prisma + Neon PostgreSQL Setup** — Completed. Set up Prisma 7 against Neon serverless Postgres (Phase 0 foundation). Handled Prisma 7 breaking changes: `prisma-client` generator (not `prisma-client-js`) with required `output` → `src/generated/prisma` (git-ignored); `datasource.url` moved out of the schema into a new `prisma.config.ts` (`defineConfig`/`env` from `prisma/config`, dotenv-loaded, `seed` command wired); explicit Neon driver adapter (`@prisma/adapter-neon` + `@neondatabase/serverless`). Neon connection split: runtime uses the pooled `DATABASE_URL` via the adapter (`src/lib/prisma.ts` singleton), migrations use the unpooled `DIRECT_URL`. Implemented the full initial schema (`User`, `ItemType`, `Item`, `Collection`, `ItemCollection`, `Tag`, `ContentType` enum) plus NextAuth `Account`/`Session`/`VerificationToken`, with the draft's indexes and cascade deletes; made `Tag` per-user (`@@unique([userId, name])`) per the overview's open question. Created + applied migration `20260723162540_init`, seeded the 7 system item types (idempotent `prisma/seed.ts`, handles NULL `userId`), and verified via `migrate status` + a `scripts/test-db.ts` connectivity check (`npm run db:test`). Rewrote `.env.example` with placeholders (removed the committed live credentials — flagged for rotation). Build passes, lint clean. See @context/features/database-spec.md.
 - 2026-07-23: **Seed Sample Data** — Completed. Rewrote `prisma/seed.ts` to populate the DB with development/demo data per @context/features/seed-spec.md. Kept the existing idempotent system item type block (capitalized names to match the current DB). Added a demo user (`demo@devstash.io`, password `12345678` hashed with `bcryptjs` at 12 rounds, `emailVerified` set, `isPro: false`), upserted by email. Seeded 5 collections (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources) with 18 items total — real snippet/prompt/command content and real link URLs (`contentType: url` on links), per-user tags, and a few items marked pinned/favorite with `lastUsedAt` so the dashboard's Pinned/Recent sections have data. Demo content uses clean-and-recreate (deletes only the demo user's items/collections first) for deterministic re-runs; verified idempotent (same 5/18 counts on a second run). Added `bcryptjs` + `@types/bcryptjs`. Build passes, lint clean. See @context/features/seed-spec.md.
 - 2026-07-23: **Dashboard Collections** — Completed. Replaced the mock collection data in the dashboard main area with live data from Neon via Prisma. Added `src/lib/db/collections.ts` with a `getCurrentUser()` helper (resolves the seeded demo user `demo@devstash.io` by email, memoized with `React.cache`; placeholder until NextAuth wires the real session), `getRecentCollections()` (6 most-recently-updated collections with item counts, derived accent color, and a most-used-first content-type list), and `getCollectionStats()` (real collection + favorite-collection counts). Border accent and the small type-icon row are derived in the db layer from each collection's items (types ordered by usage, top type's color = accent). Made `page.tsx` an async server component fetching collections + collection stats in parallel (item sections still on mock data — deferred per spec); `StatsCards` now shows real collection counts alongside mock item counts. Reworked `CollectionCard` to the new `DashboardCollection` type, rendering type icons via `DynamicIcon`. Called `connection()` (via `getCurrentUser`) so `/dashboard` renders dynamically per-request instead of being prerendered static at build time. Build passes (dashboard now dynamic), lint clean; not yet visually verified in the browser. See @context/features/dashboard-collections-spec.md.
+- 2026-07-23: **Dashboard Items** — Completed. Replaced the remaining mock item data in the dashboard main area (Pinned + Recent Items) with live data from Neon via Prisma. Added `src/lib/db/items.ts` (reusing `getCurrentUser()` from the collections db layer) with a shared `dashboardItemSelect` and a `DashboardItem` type: `getPinnedItems()` (all pinned items, most-recently-updated first), `getRecentItems()` (10 most-recently-updated), and `getItemStats()` (real item + favorite-item counts). Each item includes its `itemType` (name/icon/color) so the card's icon and left border derive directly from the type — no lookup. `page.tsx` now fetches collections, both stat sets, and both item lists in a single parallel `Promise.all`; the Pinned section already renders nothing when empty. `ItemCard` switched from the mock `Item` to `DashboardItem` (dates are `Date`, description nullable, type embedded). Moved the `DashboardStats` type onto `StatsCards` (it no longer imports the mock-data-backed `dashboard-data`); `StatsCards` now shows all-real counts. `src/lib/dashboard-data.ts` is now unused — left in place, flagged for deletion. Build passes (dashboard dynamic), lint clean; not yet visually verified in the browser. See @context/features/dashboard-items-spec.md.

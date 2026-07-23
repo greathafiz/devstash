@@ -1,6 +1,11 @@
 import { Folder, FolderHeart, Layers, Star } from "lucide-react"
 
-import type { DashboardStats } from "@/src/lib/dashboard-data"
+export type DashboardStats = {
+  itemCount: number
+  collectionCount: number
+  favoriteItemCount: number
+  favoriteCollectionCount: number
+}
 
 type Stat = {
   label: string

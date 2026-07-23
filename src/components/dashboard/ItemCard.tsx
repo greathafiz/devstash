@@ -1,18 +1,16 @@
 import { Pin, Star } from "lucide-react"
 import { DynamicIcon } from "@/src/lib/icon-map"
-import { getItemType } from "@/src/lib/dashboard-data"
-import type { Item } from "@/src/lib/mock-data"
+import type { DashboardItem } from "@/src/lib/db/items"
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   })
 }
 
-export function ItemCard({ item }: { item: Item }) {
-  const type = getItemType(item.itemTypeId)
-  const color = type?.color ?? "#6b7280"
+export function ItemCard({ item }: { item: DashboardItem }) {
+  const color = item.type.color
 
   return (
     <div
@@ -23,7 +21,7 @@ export function ItemCard({ item }: { item: Item }) {
         className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted"
         style={{ color }}
       >
-        <DynamicIcon name={type?.icon ?? ""} className="size-4" />
+        <DynamicIcon name={item.type.icon} className="size-4" />
       </span>
 
       <div className="min-w-0 flex-1">

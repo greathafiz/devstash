@@ -1,34 +1,39 @@
 import { Clock, Pin } from "lucide-react"
 
 import {
-  getDashboardStats,
-  getPinnedItems,
-  getRecentItems,
-} from "@/src/lib/dashboard-data"
-import {
   getCollectionStats,
   getRecentCollections,
 } from "@/src/lib/db/collections"
+import {
+  getItemStats,
+  getPinnedItems,
+  getRecentItems,
+} from "@/src/lib/db/items"
 import { CollectionCard } from "@/src/components/dashboard/CollectionCard"
 import { ItemCard } from "@/src/components/dashboard/ItemCard"
 import { SectionHeader } from "@/src/components/dashboard/SectionHeader"
 import { StatsCards } from "@/src/components/dashboard/StatsCards"
 
 export default async function DashboardPage() {
-  // Collection data comes from the DB; item sections still use mock data
-  // (real items land in a later feature).
-  const [recentCollections, collectionStats] = await Promise.all([
+  const [
+    recentCollections,
+    collectionStats,
+    itemStats,
+    pinnedItems,
+    recentItems,
+  ] = await Promise.all([
     getRecentCollections(),
     getCollectionStats(),
+    getItemStats(),
+    getPinnedItems(),
+    getRecentItems(),
   ])
-  const itemStats = getDashboardStats()
   const stats = {
-    ...itemStats,
+    itemCount: itemStats.itemCount,
+    favoriteItemCount: itemStats.favoriteItemCount,
     collectionCount: collectionStats.collectionCount,
     favoriteCollectionCount: collectionStats.favoriteCollectionCount,
   }
-  const pinnedItems = getPinnedItems()
-  const recentItems = getRecentItems()
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8">
