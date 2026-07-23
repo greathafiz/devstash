@@ -1,7 +1,9 @@
 import Link from "next/link"
 import { Layers } from "lucide-react"
 
-import { collections, currentUser, itemTypes } from "@/src/lib/mock-data"
+import { currentUser } from "@/src/lib/mock-data"
+import { getSidebarCollections } from "@/src/lib/db/collections"
+import { getSidebarTypes } from "@/src/lib/db/items"
 import {
   Sidebar,
   SidebarContent,
@@ -14,14 +16,11 @@ import { NavCollections } from "./nav-collections"
 import { NavTypes } from "./nav-types"
 import { NavUser } from "./nav-user"
 
-const RECENT_LIMIT = 5
-
-export function AppSidebar() {
-  const favorites = collections.filter((collection) => collection.isFavorite)
-  const recent = collections
-    .filter((collection) => !collection.isFavorite)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, RECENT_LIMIT)
+export async function AppSidebar() {
+  const [types, { favorites, recent }] = await Promise.all([
+    getSidebarTypes(),
+    getSidebarCollections(),
+  ])
 
   return (
     <Sidebar collapsible="icon">
@@ -38,7 +37,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavTypes types={itemTypes} />
+        <NavTypes types={types} />
         <SidebarSeparator />
         <NavCollections favorites={favorites} recent={recent} />
       </SidebarContent>

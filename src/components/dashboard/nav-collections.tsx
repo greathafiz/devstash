@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Folder, Star } from "lucide-react"
 
-import type { Collection } from "@/src/lib/mock-data"
+import type { SidebarCollection } from "@/src/lib/db/collections"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -14,12 +14,23 @@ import {
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar"
 
+/** Small colored dot marking a collection's most-used item type. */
+function TypeDot({ color }: { color: string | null }) {
+  return (
+    <span
+      className="size-3.5 shrink-0 rounded-full border border-border"
+      style={color ? { backgroundColor: color } : undefined}
+      aria-hidden
+    />
+  )
+}
+
 function CollectionItem({
   collection,
   active,
   showStar,
 }: {
-  collection: Collection
+  collection: SidebarCollection
   active: boolean
   showStar?: boolean
 }) {
@@ -30,7 +41,11 @@ function CollectionItem({
         tooltip={collection.name}
         render={<Link href={`/collections/${collection.id}`} />}
       >
-        <Folder style={{ color: collection.accentColor }} />
+        {showStar ? (
+          <Folder style={{ color: collection.accentColor ?? undefined }} />
+        ) : (
+          <TypeDot color={collection.accentColor} />
+        )}
         <span>{collection.name}</span>
       </SidebarMenuButton>
       <SidebarMenuBadge>
@@ -48,8 +63,8 @@ export function NavCollections({
   favorites,
   recent,
 }: {
-  favorites: Collection[]
-  recent: Collection[]
+  favorites: SidebarCollection[]
+  recent: SidebarCollection[]
 }) {
   const pathname = usePathname()
   const isActive = (id: string) => pathname === `/collections/${id}`
@@ -92,6 +107,20 @@ export function NavCollections({
           </SidebarMenu>
         </>
       )}
+
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            isActive={pathname === "/collections"}
+            tooltip="View all collections"
+            className="text-muted-foreground"
+            render={<Link href="/collections" />}
+          >
+            <Folder />
+            <span>View all collections</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
     </SidebarGroup>
   )
 }
