@@ -1,16 +1,23 @@
 import Link from "next/link"
 import { Star } from "lucide-react"
 
-import { getIcon } from "@/src/lib/icon-map"
-import { getItemType } from "@/src/lib/dashboard-data"
-import type { Collection } from "@/src/lib/mock-data"
+import { DynamicIcon } from "@/src/lib/icon-map"
+import type { DashboardCollection } from "@/src/lib/db/collections"
 
-export function CollectionCard({ collection }: { collection: Collection }) {
+export function CollectionCard({
+  collection,
+}: {
+  collection: DashboardCollection
+}) {
   return (
     <Link
       href={`/collections/${collection.id}`}
       className="group flex flex-col gap-3 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50"
-      style={{ borderLeftColor: collection.accentColor }}
+      style={
+        collection.accentColor
+          ? { borderLeftColor: collection.accentColor }
+          : undefined
+      }
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="flex items-center gap-1.5 font-medium">
@@ -25,24 +32,22 @@ export function CollectionCard({ collection }: { collection: Collection }) {
         {collection.itemCount} items
       </p>
 
-      <p className="line-clamp-1 text-sm text-muted-foreground">
-        {collection.description}
-      </p>
+      {collection.description && (
+        <p className="line-clamp-1 text-sm text-muted-foreground">
+          {collection.description}
+        </p>
+      )}
 
       <div className="mt-auto flex items-center gap-2 pt-1">
-        {collection.itemTypeIds.map((typeId) => {
-          const type = getItemType(typeId)
-          if (!type) return null
-          const Icon = getIcon(type.icon)
-          return (
-            <Icon
-              key={typeId}
-              className="size-4"
-              style={{ color: type.color }}
-              aria-label={type.label}
-            />
-          )
-        })}
+        {collection.types.map((type) => (
+          <DynamicIcon
+            key={type.id}
+            name={type.icon}
+            color={type.color}
+            className="size-4"
+            aria-label={type.name}
+          />
+        ))}
       </div>
     </Link>
   )
