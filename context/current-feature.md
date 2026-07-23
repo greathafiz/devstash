@@ -1,29 +1,22 @@
 # Current Feature
 
-**Dashboard UI Phase 2** — Build out the sidebar for the dashboard layout (phase 2 of 3). See @context/features/dashboard-phase-2-spec.md.
+<!-- Feature name and short description -->
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-- Collapsible sidebar
-- Items/types with links to `/items/TYPE` (e.g. `/items/snippets`)
-- Favorite collections
-- Most recent collections
-- User avatar area at the bottom
-- Drawer icon to open/close sidebar
-- Always a drawer on mobile view
+<!-- Goals and requirements -->
 
 ## Notes
 
-- Use the screenshot at @context/screenshots/dashboard-ui-main.png for the target look.
-- Import data directly from @src/lib/mock-data.ts for now (no database yet).
-- References: @context/project-overview.md, @context/features/dashboard-phase-1-spec.md, @context/features/dashboard-phase-3-spec.md.
+<!-- Any extra notes -->
 
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
 
 - 2026-07-23: **Dashboard UI Phase 1** — Completed. Initialized shadcn/ui (Nova preset, @base-ui/react, lucide icons) with Button + Input components; added `/dashboard` route with layout and top bar (DevStash logo, display-only search with ⌘K hint, New Collection + New Item buttons); dark mode by default; Sidebar and Main placeholders. Fixed the `--font-sans` self-reference in globals.css so Geist applies (and wired `--font-mono`). Build passes, lint clean. See @context/features/dashboard-phase-1-spec.md.
+- 2026-07-23: **Dashboard UI Phase 2** — Completed. Added the collapsible dashboard sidebar via the shadcn sidebar block (relocated the generated files into `src/` and fixed their aliases in components.json). Built `AppSidebar` with a Types nav (color-tinted lucide icons, counts, links to `/items/[type]`), Favorites + Recent collection groups, and a user-avatar footer with a settings link. Collapses to an icon rail on desktop and a drawer on mobile via a top-bar `SidebarTrigger`; moved the DevStash logo into the sidebar header and added `TooltipProvider` at the root. Rewrote the generated `use-mobile` hook to satisfy the repo's `set-state-in-effect` lint rule. Data imported directly from mock-data. Build passes, lint clean. See @context/features/dashboard-phase-2-spec.md.
