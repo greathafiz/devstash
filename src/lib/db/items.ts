@@ -105,3 +105,46 @@ export async function getItemStats(): Promise<ItemStats> {
 
   return { itemCount, favoriteItemCount }
 }
+
+/** A system item type as shown in the sidebar's Types nav. */
+export type SidebarType = {
+  id: string
+  name: string
+  icon: string
+  color: string
+  /** Link target, e.g. `/items/snippet`. */
+  href: string
+  /** Number of the current user's items of this type. */
+  count: number
+}
+
+/**
+ * Fetch the system item types for the sidebar, each with the current user's
+ * count of items of that type. Ordered alphabetically for a stable nav.
+ */
+export async function getSidebarTypes(): Promise<SidebarType[]> {
+  const user = await getCurrentUser()
+
+  const types = await prisma.itemType.findMany({
+    where: { isSystem: true, userId: null },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      icon: true,
+      color: true,
+      _count: {
+        select: { items: { where: { userId: user.id } } },
+      },
+    },
+  })
+
+  return types.map((type) => ({
+    id: type.id,
+    name: type.name,
+    icon: type.icon,
+    color: type.color,
+    href: `/items/${type.name.toLowerCase()}`,
+    count: type._count.items,
+  }))
+}

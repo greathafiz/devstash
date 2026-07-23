@@ -4,6 +4,7 @@ import { connection } from "next/server"
 import { prisma } from "@/src/lib/prisma"
 
 const RECENT_COLLECTIONS_LIMIT = 6
+const SIDEBAR_RECENT_LIMIT = 5
 
 // Auth isn't wired up yet, so the dashboard operates as the seeded demo user.
 // Swap this for the real session (auth()) once NextAuth lands — everything else
@@ -129,6 +130,66 @@ export async function getRecentCollections(
     itemCount: collection._count.items,
     ...summarizeTypes(collection.items.map(({ item }) => item)),
   }))
+}
+
+/** Collection shape the sidebar's Collections nav renders. */
+export type SidebarCollection = {
+  id: string
+  name: string
+  isFavorite: boolean
+  itemCount: number
+  /** Color of the collection's most-used item type; `null` when empty. */
+  accentColor: string | null
+}
+
+/**
+ * Fetch the current user's collections for the sidebar, split into favorites
+ * and (non-favorite) recents. Favorites render a star; recents render a colored
+ * circle derived from the collection's most-used item type.
+ */
+export async function getSidebarCollections(): Promise<{
+  favorites: SidebarCollection[]
+  recent: SidebarCollection[]
+}> {
+  const user = await getCurrentUser()
+
+  const collections = await prisma.collection.findMany({
+    where: { userId: user.id },
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      isFavorite: true,
+      _count: { select: { items: true } },
+      items: {
+        select: {
+          item: {
+            select: {
+              itemType: {
+                select: { id: true, name: true, icon: true, color: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+
+  const mapped = collections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+    isFavorite: collection.isFavorite,
+    itemCount: collection._count.items,
+    accentColor: summarizeTypes(collection.items.map(({ item }) => item))
+      .accentColor,
+  }))
+
+  return {
+    favorites: mapped.filter((collection) => collection.isFavorite),
+    recent: mapped
+      .filter((collection) => !collection.isFavorite)
+      .slice(0, SIDEBAR_RECENT_LIMIT),
+  }
 }
 
 /** Collection counts for the dashboard stats cards. */

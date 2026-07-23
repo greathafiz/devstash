@@ -1,6 +1,6 @@
 # Current Feature
 
-**Dashboard Items** — Replace the dummy item data in the dashboard main area (pinned + recent items) with live data from the Neon database via Prisma, keeping the current look and layout.
+**Stats & Sidebar** — Replace mock data with live database data for the main-area stats and the sidebar (system item types + collections), keeping the current design/layout.
 
 ## Status
 
@@ -8,19 +8,17 @@ Completed
 
 ## Goals
 
-- Create `src/lib/db/items.ts` with data fetching functions.
-- Fetch items directly in the server component (no mock-data).
-- Derive each item card's icon/border from the item type.
-- Display item type tags and everything currently shown on the cards (see @context/screenshots/dashboard-ui-main.png).
-- If there are no pinned items, render nothing in that section.
-- Update the collection stats display.
+- Display main-area stats from database data, keeping the current design/layout.
+- Show system item types in the sidebar with their icons, linking to `/items/[typename]`.
+- Show actual collection data from the database in the sidebar.
+- Add a "View all collections" link under the collections list that goes to `/collections`.
+- Keep star icons for favorite collections; for recents, show a colored circle based on the most-used item type in each collection.
+- Create `src/lib/db/items.ts` and add the database functions (use `src/lib/db/collections.ts` for reference).
 
 ## Notes
 
-- Full spec: @context/features/dashboard-items-spec.md
-- Mirrors the approach used for Dashboard Collections (`src/lib/db/collections.ts`), which replaced mock collection data with live Prisma data.
-- Item card icon/border color comes from the item's type; keep the existing card layout (tags, pin/favorite markers, dates).
-- `src/lib/dashboard-data.ts` is now unused (the dashboard no longer reads mock data). Left in place — flag for deletion.
+- Full spec: @context/features/stats-sidebar-spec.md
+- Reference: `src/lib/db/collections.ts`.
 
 ## History
 
@@ -33,3 +31,4 @@ Completed
 - 2026-07-23: **Seed Sample Data** — Completed. Rewrote `prisma/seed.ts` to populate the DB with development/demo data per @context/features/seed-spec.md. Kept the existing idempotent system item type block (capitalized names to match the current DB). Added a demo user (`demo@devstash.io`, password `12345678` hashed with `bcryptjs` at 12 rounds, `emailVerified` set, `isPro: false`), upserted by email. Seeded 5 collections (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources) with 18 items total — real snippet/prompt/command content and real link URLs (`contentType: url` on links), per-user tags, and a few items marked pinned/favorite with `lastUsedAt` so the dashboard's Pinned/Recent sections have data. Demo content uses clean-and-recreate (deletes only the demo user's items/collections first) for deterministic re-runs; verified idempotent (same 5/18 counts on a second run). Added `bcryptjs` + `@types/bcryptjs`. Build passes, lint clean. See @context/features/seed-spec.md.
 - 2026-07-23: **Dashboard Collections** — Completed. Replaced the mock collection data in the dashboard main area with live data from Neon via Prisma. Added `src/lib/db/collections.ts` with a `getCurrentUser()` helper (resolves the seeded demo user `demo@devstash.io` by email, memoized with `React.cache`; placeholder until NextAuth wires the real session), `getRecentCollections()` (6 most-recently-updated collections with item counts, derived accent color, and a most-used-first content-type list), and `getCollectionStats()` (real collection + favorite-collection counts). Border accent and the small type-icon row are derived in the db layer from each collection's items (types ordered by usage, top type's color = accent). Made `page.tsx` an async server component fetching collections + collection stats in parallel (item sections still on mock data — deferred per spec); `StatsCards` now shows real collection counts alongside mock item counts. Reworked `CollectionCard` to the new `DashboardCollection` type, rendering type icons via `DynamicIcon`. Called `connection()` (via `getCurrentUser`) so `/dashboard` renders dynamically per-request instead of being prerendered static at build time. Build passes (dashboard now dynamic), lint clean; not yet visually verified in the browser. See @context/features/dashboard-collections-spec.md.
 - 2026-07-23: **Dashboard Items** — Completed. Replaced the remaining mock item data in the dashboard main area (Pinned + Recent Items) with live data from Neon via Prisma. Added `src/lib/db/items.ts` (reusing `getCurrentUser()` from the collections db layer) with a shared `dashboardItemSelect` and a `DashboardItem` type: `getPinnedItems()` (all pinned items, most-recently-updated first), `getRecentItems()` (10 most-recently-updated), and `getItemStats()` (real item + favorite-item counts). Each item includes its `itemType` (name/icon/color) so the card's icon and left border derive directly from the type — no lookup. `page.tsx` now fetches collections, both stat sets, and both item lists in a single parallel `Promise.all`; the Pinned section already renders nothing when empty. `ItemCard` switched from the mock `Item` to `DashboardItem` (dates are `Date`, description nullable, type embedded). Moved the `DashboardStats` type onto `StatsCards` (it no longer imports the mock-data-backed `dashboard-data`); `StatsCards` now shows all-real counts. `src/lib/dashboard-data.ts` is now unused — left in place, flagged for deletion. Build passes (dashboard dynamic), lint clean; not yet visually verified in the browser. See @context/features/dashboard-items-spec.md.
+- 2026-07-23: **Stats & Sidebar** — Completed. Replaced the sidebar's mock data (Types + Collections navs) with live Neon/Prisma data; the main-area stats were already live from the Dashboard Items work. Added `getSidebarTypes()` to `src/lib/db/items.ts` — system item types (`isSystem`, `userId: null`) ordered alphabetically, each with the current user's per-type item `_count` and an `href` of `/items/[name-lowercased]`. Added `getSidebarCollections()` to `src/lib/db/collections.ts` — the user's collections split into `favorites` and (non-favorite) `recent` (5), each carrying an `accentColor` derived from its most-used item type (reuses the existing `summarizeTypes`). `NavTypes` now consumes `SidebarType` (renders the type name as label, color-tinted icon, count badge, link to the type page); `NavCollections` consumes `SidebarCollection` — favorites keep the folder icon + star badge, recents now lead with a colored circle (a `TypeDot`) of the most-used type instead of a plain folder, and a "View all collections" link to `/collections` was added under the lists. `AppSidebar` became an async server component fetching types + collections in parallel via `Promise.all`; only the `NavUser` footer still reads the `currentUser` mock (out of scope). Build passes (dashboard dynamic), lint clean; not visually verified in the browser (skipped per request). See @context/features/stats-sidebar-spec.md.

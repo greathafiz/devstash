@@ -37,6 +37,7 @@ export function NavUser({ user }: { user: User }) {
           variant="ghost"
           size="icon-sm"
           aria-label="Settings"
+          nativeButton={false}
           className="shrink-0 group-data-[collapsible=icon]:hidden"
           render={<Link href="/settings" />}
         >

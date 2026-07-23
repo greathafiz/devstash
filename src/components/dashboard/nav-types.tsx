@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { getIcon } from "@/src/lib/icon-map"
-import type { ItemType } from "@/src/lib/mock-data"
+import type { SidebarType } from "@/src/lib/db/items"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -14,7 +14,7 @@ import {
   SidebarMenuItem,
 } from "@/src/components/ui/sidebar"
 
-export function NavTypes({ types }: { types: ItemType[] }) {
+export function NavTypes({ types }: { types: SidebarType[] }) {
   const pathname = usePathname()
 
   return (
@@ -27,11 +27,11 @@ export function NavTypes({ types }: { types: ItemType[] }) {
             <SidebarMenuItem key={type.id}>
               <SidebarMenuButton
                 isActive={pathname === type.href}
-                tooltip={type.label}
+                tooltip={type.name}
                 render={<Link href={type.href} />}
               >
                 <Icon style={{ color: type.color }} />
-                <span>{type.label}</span>
+                <span>{type.name}</span>
               </SidebarMenuButton>
               <SidebarMenuBadge>{type.count}</SidebarMenuBadge>
             </SidebarMenuItem>
